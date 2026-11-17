@@ -42,7 +42,13 @@ public class SecurityConfig {
         UserDetails admin = User.builder()
                 .username("admin")
                 .password(encoder.encode("admin123"))
-                .roles("ADMIN", "USER")
+                .roles("ADMIN")
+                .build();
+
+        UserDetails manager = User.builder()
+                .username("manager")
+                .password(encoder.encode("manager123"))
+                .roles("MANAGER")
                 .build();
 
         UserDetails user = User.builder()
@@ -57,7 +63,7 @@ public class SecurityConfig {
                 .roles("GUEST")
                 .build();
 
-        return new InMemoryUserDetailsManager(admin, user, guest);
+        return new InMemoryUserDetailsManager(admin, manager, user, guest);
     }
 
     @Bean
@@ -92,10 +98,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
             // Public info & CSRF token retrieval
             .requestMatchers("/api/v1/public/**", "/api/v1/csrf", "/actuator/health").permitAll()
-            // Document CRUD permissions
-            .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").hasAnyRole("USER", "ADMIN")
-            .requestMatchers(HttpMethod.POST, "/api/v1/documents/**").hasAnyRole("USER", "ADMIN")
-            .requestMatchers(HttpMethod.PUT, "/api/v1/documents/**").hasAnyRole("USER", "ADMIN")
+            // Document CRUD permissions based on multi-user roles
+            .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").hasAnyRole("USER", "MANAGER", "ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/v1/documents/**").hasAnyRole("MANAGER", "ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/api/v1/documents/**").hasAnyRole("MANAGER", "ADMIN")
             .requestMatchers(HttpMethod.DELETE, "/api/v1/documents/**").hasRole("ADMIN")
             // Audit log retrieval only for ADMIN
             .requestMatchers("/api/v1/audit-logs/**").hasRole("ADMIN")

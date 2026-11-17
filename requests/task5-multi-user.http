@@ -1,0 +1,147 @@
+### Task 5: Multi-user Role-Based Access Control (10 Requests)
+@baseUrl = http://localhost:8080/api/v1
+@adminAuth = Basic YWRtaW46YWRtaW4xMjM=
+@managerAuth = Basic bWFuYWdlcjptYW5hZ2VyMTIz
+@userAuth = Basic dXNlcjp1c2VyMTIz
+
+### 1. Anonymous Access - Read Documents (Expect: 401 Unauthorized)
+GET {{baseUrl}}/documents
+Accept: application/json
+
+> {%
+    client.test("Anonymous request is rejected with 401", function() {
+        client.assert(response.status === 401, "Expected 401 Unauthorized");
+    });
+%}
+
+### 2. User Role - Read All Documents (Expect: 200 OK)
+GET {{baseUrl}}/documents
+Authorization: {{userAuth}}
+Accept: application/json
+
+> {%
+    client.test("User role can read all documents", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+        if (response.body.length > 0) {
+            client.global.set("existingDocId", response.body[0].id);
+        }
+    });
+%}
+
+### 3. User Role - Create Document Attempt (Expect: 403 Forbidden)
+POST {{baseUrl}}/documents
+Authorization: {{userAuth}}
+Content-Type: application/json
+
+{
+  "title": "Unauthorized User Document",
+  "description": "User attempting to create document without permissions",
+  "classificationLevel": "INTERNAL",
+  "department": "Support",
+  "tags": ["test"]
+}
+
+> {%
+    client.test("User role cannot create documents (403)", function() {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 4. User Role - Update Document Attempt (Expect: 403 Forbidden)
+PUT {{baseUrl}}/documents/{{existingDocId}}
+Authorization: {{userAuth}}
+Content-Type: application/json
+
+{
+  "title": "Unauthorized User Update",
+  "description": "User attempting to update document without permissions",
+  "classificationLevel": "INTERNAL",
+  "department": "Support",
+  "tags": ["test"]
+}
+
+> {%
+    client.test("User role cannot update documents (403)", function() {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 5. User Role - Delete Document Attempt (Expect: 403 Forbidden)
+DELETE {{baseUrl}}/documents/{{existingDocId}}
+Authorization: {{userAuth}}
+
+> {%
+    client.test("User role cannot delete documents (403)", function() {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 6. Manager Role - Create Document (Expect: 201 Created)
+POST {{baseUrl}}/documents
+Authorization: {{managerAuth}}
+Content-Type: application/json
+
+{
+  "title": "Security Incident Briefing Q4",
+  "description": "Manager created operational briefing",
+  "classificationLevel": "CONFIDENTIAL",
+  "department": "Security Ops",
+  "tags": ["manager", "briefing"]
+}
+
+> {%
+    client.test("Manager role can create documents (201)", function() {
+        client.assert(response.status === 201, "Expected 201 Created");
+        client.global.set("managerDocId", response.body.id);
+    });
+%}
+
+### 7. Manager Role - Update Document (Expect: 200 OK)
+PUT {{baseUrl}}/documents/{{managerDocId}}
+Authorization: {{managerAuth}}
+Content-Type: application/json
+
+{
+  "title": "Security Incident Briefing Q4 - Reviewed",
+  "description": "Updated by manager with risk metrics",
+  "classificationLevel": "CONFIDENTIAL",
+  "department": "Security Ops",
+  "tags": ["manager", "reviewed"]
+}
+
+> {%
+    client.test("Manager role can update documents (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 8. Manager Role - Delete Document Attempt (Expect: 403 Forbidden)
+DELETE {{baseUrl}}/documents/{{managerDocId}}
+Authorization: {{managerAuth}}
+
+> {%
+    client.test("Manager role cannot delete documents (403)", function() {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 9. Admin Role - Delete Document (Expect: 200 OK)
+DELETE {{baseUrl}}/documents/{{managerDocId}}
+Authorization: {{adminAuth}}
+
+> {%
+    client.test("Admin role can delete documents (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 10. Admin Role - Access Security Audit Logs (Expect: 200 OK)
+GET {{baseUrl}}/audit-logs
+Authorization: {{adminAuth}}
+Accept: application/json
+
+> {%
+    client.test("Admin role can access audit logs (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
