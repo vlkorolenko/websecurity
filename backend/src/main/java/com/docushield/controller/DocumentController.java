@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,7 @@ public class DocumentController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<List<DocumentItem>> getAllDocuments(
             @RequestParam(required = false) ClassificationLevel classification,
             HttpServletRequest request) {
@@ -39,6 +41,7 @@ public class DocumentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<DocumentItem> getDocumentById(
             @PathVariable String id,
             HttpServletRequest request) {
@@ -57,6 +60,7 @@ public class DocumentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<DocumentItem> createDocument(
             @Valid @RequestBody DocumentItem documentItem,
             Authentication authentication,
@@ -72,6 +76,7 @@ public class DocumentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<DocumentItem> updateDocument(
             @PathVariable String id,
             @Valid @RequestBody DocumentItem updateData,
@@ -91,6 +96,7 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteDocument(
             @PathVariable String id,
             HttpServletRequest request) {
@@ -105,5 +111,41 @@ public class DocumentController {
                     request, HttpStatus.NOT_FOUND.value(), "Attempted delete on missing doc: " + id);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/secret-vault")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getSecretVault(Authentication auth) {
+        return ResponseEntity.ok(java.util.Map.of(
+                "endpoint", "/secret-vault",
+                "annotation", "@PreAuthorize(\"hasRole('ADMIN')\")",
+                "status", "Access Granted",
+                "user", auth.getName(),
+                "data", "Classified Quantum Security Blueprint v4"
+        ));
+    }
+
+    @GetMapping("/management-overview")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    public ResponseEntity<?> getManagementOverview(Authentication auth) {
+        return ResponseEntity.ok(java.util.Map.of(
+                "endpoint", "/management-overview",
+                "annotation", "@PreAuthorize(\"hasAnyRole('MANAGER', 'ADMIN')\")",
+                "status", "Access Granted",
+                "user", auth.getName(),
+                "data", "Q4 Department Performance & Incident Analytics"
+        ));
+    }
+
+    @GetMapping("/user-profile")
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<?> getUserProfile(Authentication auth) {
+        return ResponseEntity.ok(java.util.Map.of(
+                "endpoint", "/user-profile",
+                "annotation", "@PreAuthorize(\"hasAnyRole('USER', 'MANAGER', 'ADMIN')\")",
+                "status", "Access Granted",
+                "username", auth.getName(),
+                "authorities", auth.getAuthorities().toString()
+        ));
     }
 }

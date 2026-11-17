@@ -27,7 +27,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
     @Value("${security.csrf.enabled:false}")
@@ -100,13 +100,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
             // Public info & CSRF token retrieval
             .requestMatchers("/api/v1/public/**", "/api/v1/csrf", "/actuator/health").permitAll()
-            // Document CRUD permissions based on multi-user roles
-            .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").hasAnyRole("USER", "MANAGER", "ADMIN")
-            .requestMatchers(HttpMethod.POST, "/api/v1/documents/**").hasAnyRole("MANAGER", "ADMIN")
-            .requestMatchers(HttpMethod.PUT, "/api/v1/documents/**").hasAnyRole("MANAGER", "ADMIN")
-            .requestMatchers(HttpMethod.DELETE, "/api/v1/documents/**").hasRole("ADMIN")
-            // Audit log retrieval only for ADMIN
+            // Route-level security enforced via @PreAuthorize method annotations
             .requestMatchers("/api/v1/audit-logs/**").hasRole("ADMIN")
+            .requestMatchers("/api/v1/documents/**").authenticated()
             // All other requests require authentication
             .anyRequest().authenticated()
         );

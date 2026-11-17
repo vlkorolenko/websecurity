@@ -109,3 +109,11 @@ docker compose up -d
   * `manager` (пароль: `manager123`, роль: `MANAGER`) - створення, читання та оновлення документів. Видалення та аудит заборонено (403 Forbidden).
   * `user` (пароль: `user123`, роль: `USER`) - лише читання документів. Створення, оновлення та видалення заборонено (403 Forbidden).
 * У файлі [requests/task5-multi-user.http](file:///Users/vlkorolenko/Desktop/securityweb/requests/task5-multi-user.http) реалізовано набір із 10 запитів з автоматичними асертами статус-кодів (401, 200, 201, 403) для підтвердження матриці прав доступу.
+
+### Лабораторна №6: Annotations
+* Увімкнено Method Security через `@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)`.
+* Захищено маршрути контролера за допомогою анотацій `@PreAuthorize`:
+  * `@PreAuthorize("hasRole('ADMIN')")` для секретного сховища (`/documents/secret-vault`) та видалення (`DELETE /documents/{id}`).
+  * `@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")` для панелі управління (`/documents/management-overview`), створення (`POST`) та оновлення (`PUT`).
+  * `@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")` для профілю користувача (`/documents/user-profile`) та читання списку документів.
+* У файлі [requests/task6-annotations.http](file:///Users/vlkorolenko/Desktop/securityweb/requests/task6-annotations.http) створено 10 запитів від різних користувачів (anonymous, user, manager, admin) з перевіркою коректності спрацьовування анотацій (401, 403, 200).
