@@ -39,19 +39,7 @@ Accept: application/json
     });
 %}
 
-### 4. Admin Role on @PreAuthorize("hasRole('ADMIN')") Vault (Expect: 200 OK)
-// @no-cookie-jar
-GET {{baseUrl}}/documents/secret-vault
-Authorization: {{adminAuth}}
-Accept: application/json
-
-> {%
-    client.test("Admin role allowed by @PreAuthorize (200)", function() {
-        client.assert(response.status === 200, "Expected 200 OK");
-    });
-%}
-
-### 5. User Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 403 Forbidden)
+### 4. User Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 403 Forbidden)
 // @no-cookie-jar
 GET {{baseUrl}}/documents/management-overview
 Authorization: {{userAuth}}
@@ -63,43 +51,7 @@ Accept: application/json
     });
 %}
 
-### 6. Manager Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 200 OK)
-// @no-cookie-jar
-GET {{baseUrl}}/documents/management-overview
-Authorization: {{managerAuth}}
-Accept: application/json
-
-> {%
-    client.test("Manager role allowed management overview (200)", function() {
-        client.assert(response.status === 200, "Expected 200 OK");
-    });
-%}
-
-### 7. Admin Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 200 OK)
-// @no-cookie-jar
-GET {{baseUrl}}/documents/management-overview
-Authorization: {{adminAuth}}
-Accept: application/json
-
-> {%
-    client.test("Admin role allowed management overview (200)", function() {
-        client.assert(response.status === 200, "Expected 200 OK");
-    });
-%}
-
-### 8. User Role on @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')") (Expect: 200 OK)
-// @no-cookie-jar
-GET {{baseUrl}}/documents/user-profile
-Authorization: {{userAuth}}
-Accept: application/json
-
-> {%
-    client.test("User role allowed user profile (200)", function() {
-        client.assert(response.status === 200, "Expected 200 OK");
-    });
-%}
-
-### 9. User Role Create Attempt on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 403 Forbidden)
+### 5. User Role Create Attempt on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 403 Forbidden)
 // @no-cookie-jar
 POST {{baseUrl}}/documents
 Authorization: {{userAuth}}
@@ -119,7 +71,7 @@ Content-Type: application/json
     });
 %}
 
-### 10. Manager Role Delete Attempt on @PreAuthorize("hasRole('ADMIN')") (Expect: 403 Forbidden)
+### 6. Manager Role Delete Attempt on @PreAuthorize("hasRole('ADMIN')") (Expect: 403 Forbidden)
 // @no-cookie-jar
 DELETE {{baseUrl}}/documents/non-existent-id
 Authorization: {{managerAuth}}
@@ -127,5 +79,53 @@ Authorization: {{managerAuth}}
 > {%
     client.test("Manager delete blocked by @PreAuthorize (403)", function() {
         client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+### 7. User Role on @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')") (Expect: 200 OK)
+// @no-cookie-jar
+GET {{baseUrl}}/documents/user-profile
+Authorization: {{userAuth}}
+Accept: application/json
+
+> {%
+    client.test("User role allowed user profile (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 8. Manager Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 200 OK)
+// @no-cookie-jar
+GET {{baseUrl}}/documents/management-overview
+Authorization: {{managerAuth}}
+Accept: application/json
+
+> {%
+    client.test("Manager role allowed management overview (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 9. Admin Role on @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')") (Expect: 200 OK)
+// @no-cookie-jar
+GET {{baseUrl}}/documents/management-overview
+Authorization: {{adminAuth}}
+Accept: application/json
+
+> {%
+    client.test("Admin role allowed management overview (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+### 10. Admin Role on @PreAuthorize("hasRole('ADMIN')") Vault (Expect: 200 OK)
+// @no-cookie-jar
+GET {{baseUrl}}/documents/secret-vault
+Authorization: {{adminAuth}}
+Accept: application/json
+
+> {%
+    client.test("Admin role allowed secret vault (200)", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
     });
 %}
