@@ -148,4 +148,21 @@ public class DocumentController {
                 "authorities", auth.getAuthorities().toString()
         ));
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/hello/admin")
+    public String helloAdmin() {
+        return "Hello Admin!";
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/hello/user")
+    public String helloUser() {
+        return "Hello User!";
+    }
+
+    @GetMapping("/hello/unknown")
+    public String helloUnknown() {
+        return "Hello Unknown!";
+    }
 }

@@ -117,3 +117,17 @@ docker compose up -d
   * `@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")` для панелі управління (`/documents/management-overview`), створення (`POST`) та оновлення (`PUT`).
   * `@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")` для профілю користувача (`/documents/user-profile`) та читання списку документів.
 * У файлі [requests/task6-annotations.http](file:///Users/vlkorolenko/Desktop/securityweb/requests/task6-annotations.http) створено 10 запитів від різних користувачів (anonymous, user, manager, admin) з перевіркою коректності спрацьовування анотацій (401, 403, 200).
+
+### Лабораторна №7: Access testing (JUnit)
+* Створено клас інтеграційних тестів [backend/src/test/java/com/docushield/AccessTests.java](file:///Users/vlkorolenko/Desktop/securityweb/backend/src/test/java/com/docushield/AccessTests.java) на базі Spring Boot Test та Spring Security Test (`MockMvc`, `@WithMockUser`, `@WithAnonymousUser`).
+* Реалізовано 10 автоматичних JUnit тестів, що перевіряють статус-коди доступу:
+  1. `whenAnonymAccessDocumentsThenStatusUnauthorized` (401)
+  2. `whenAnonymAccessSecretVaultThenStatusUnauthorized` (401)
+  3. `whenUserAccessDocumentsThenStatusOk` (200)
+  4. `whenUserAccessUserProfileThenStatusOk` (200)
+  5. `whenUserAccessHelloUserThenStatusOk` (200)
+  6. `whenUserAccessHelloAdminThenStatusForbidden` (403)
+  7. `whenUserAccessSecretVaultThenStatusForbidden` (403)
+  8. `whenManagerAccessManagementOverviewThenStatusOk` (200)
+  9. `whenManagerAccessSecretVaultThenStatusForbidden` (403)
+  10. `whenAdminAccessSecretVaultThenStatusOk` (200)
