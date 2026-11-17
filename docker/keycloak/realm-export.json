@@ -1,0 +1,57 @@
+{
+  "realm": "docushield-realm",
+  "enabled": true,
+  "displayName": "DocuShield Security Realm",
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "ROLE_ADMIN", "description": "Administrator Role" },
+      { "name": "ROLE_USER", "description": "Standard User Role" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "docushield-app",
+      "name": "DocuShield Client Application",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:4200/*", "http://localhost:8080/*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@docushield.local",
+      "firstName": "Security",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_ADMIN", "ROLE_USER"]
+    },
+    {
+      "username": "user",
+      "enabled": true,
+      "email": "user@docushield.local",
+      "firstName": "John",
+      "lastName": "Analyst",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_USER"]
+    }
+  ]
+}

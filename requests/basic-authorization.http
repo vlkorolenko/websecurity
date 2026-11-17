@@ -1,0 +1,131 @@
+### DocuShield - Task 3: Basic Authorization Test Suite (10 Requests)
+@baseUrl = http://localhost:8080/api/v1
+@adminAuth = Basic YWRtaW46YWRtaW4xMjM=
+@userAuth = Basic dXNlcjp1c2VyMTIz
+@guestAuth = Basic Z3Vlc3Q6Z3Vlc3QxMjM=
+@invalidAuth = Basic aW52YWxpZDpiYWRwYXNz
+
+### 1. Anonymous Access (Expected: 401 Unauthorized)
+GET {{baseUrl}}/documents
+Accept: application/json
+
+> {%
+    client.test("Anonymous access rejected with 401", function() {
+        client.assert(response.status === 401, "Expected 401 status code");
+    });
+%}
+
+### 2. Invalid Credentials (Expected: 401 Unauthorized)
+GET {{baseUrl}}/documents
+Authorization: {{invalidAuth}}
+Accept: application/json
+
+> {%
+    client.test("Invalid credentials rejected with 401", function() {
+        client.assert(response.status === 401, "Expected 401 status code");
+    });
+%}
+
+### 3. Valid User - Retrieve All Documents (Expected: 200 OK)
+GET {{baseUrl}}/documents
+Authorization: {{userAuth}}
+Accept: application/json
+
+> {%
+    client.test("User can read documents with 200", function() {
+        client.assert(response.status === 200, "Expected 200 status code");
+    });
+%}
+
+### 4. Valid User - Filter by Classification (Expected: 200 OK)
+GET {{baseUrl}}/documents?classification=INTERNAL
+Authorization: {{userAuth}}
+Accept: application/json
+
+> {%
+    client.test("User can filter documents", function() {
+        client.assert(response.status === 200, "Expected 200 status code");
+    });
+%}
+
+### 5. Valid User - Create Document (Expected: 201 Created)
+POST {{baseUrl}}/documents
+Authorization: {{userAuth}}
+Content-Type: application/json
+
+{
+  "title": "Confidential Security Audit Report",
+  "description": "Quarterly audit evaluation of security perimeter",
+  "classificationLevel": "CONFIDENTIAL",
+  "department": "Security Team",
+  "tags": ["audit", "internal"]
+}
+
+> {%
+    client.test("User can create document", function() {
+        client.assert(response.status === 201, "Expected 201 status code");
+        client.global.set("createdDocId", response.body.id);
+    });
+%}
+
+### 6. Valid User - Read Specific Document by ID (Expected: 200 OK)
+GET {{baseUrl}}/documents/{{createdDocId}}
+Authorization: {{userAuth}}
+Accept: application/json
+
+> {%
+    client.test("User can read single document", function() {
+        client.assert(response.status === 200, "Expected 200 status code");
+    });
+%}
+
+### 7. Valid User - Update Document (Expected: 200 OK)
+PUT {{baseUrl}}/documents/{{createdDocId}}
+Authorization: {{userAuth}}
+Content-Type: application/json
+
+{
+  "title": "Confidential Security Audit Report v2",
+  "description": "Updated report with remediations",
+  "classificationLevel": "CONFIDENTIAL",
+  "department": "Security Team",
+  "tags": ["audit", "updated"]
+}
+
+> {%
+    client.test("User can update document", function() {
+        client.assert(response.status === 200, "Expected 200 status code");
+    });
+%}
+
+### 8. Non-Admin Delete Attempt (Expected: 403 Forbidden)
+DELETE {{baseUrl}}/documents/{{createdDocId}}
+Authorization: {{userAuth}}
+
+> {%
+    client.test("Regular user cannot delete document", function() {
+        client.assert(response.status === 403, "Expected 403 status code");
+    });
+%}
+
+### 9. Admin User - Delete Document (Expected: 204 No Content)
+DELETE {{baseUrl}}/documents/{{createdDocId}}
+Authorization: {{adminAuth}}
+
+> {%
+    client.test("Admin can delete document", function() {
+        client.assert(response.status === 204, "Expected 204 status code");
+    });
+%}
+
+### 10. Admin User - Inspect Audit Log Trail (Expected: 200 OK)
+GET {{baseUrl}}/audit-logs
+Authorization: {{adminAuth}}
+Accept: application/json
+
+> {%
+    client.test("Admin can view audit logs", function() {
+        client.assert(response.status === 200, "Expected 200 status code");
+        client.assert(response.body.length > 0, "Audit logs should not be empty");
+    });
+%}

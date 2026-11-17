@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: docushield-backend
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/docushield_db}
+      auto-index-creation: true
+
+security:
+  csrf:
+    enabled: ${SECURITY_CSRF_ENABLED:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.docushield: DEBUG
+    org.springframework.security: DEBUG

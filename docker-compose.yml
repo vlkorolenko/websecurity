@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: docushield-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: docushield_db
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - docushield-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.2
+    container_name: docushield-keycloak
+    restart: always
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8081
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm.json:ro
+    networks:
+      - docushield-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docushield-backend
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/docushield_db
+      SECURITY_CSRF_ENABLED: "false"
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    networks:
+      - docushield-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: docushield-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    networks:
+      - docushield-net
+
+networks:
+  docushield-net:
+    driver: bridge
+
+volumes:
+  mongo_data:

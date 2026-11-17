@@ -1,0 +1,159 @@
+<div class="container">
+  <header class="header">
+    <div class="brand">
+      <span class="logo-shield">️</span>
+      <div>
+        <h1>DocuShield Security Platform</h1>
+        <p class="subtitle">Secure Document Classification, Basic Auth, CSRF &amp; Audit Trail</p>
+      </div>
+    </div>
+    <div class="user-badge">
+      <span>{{ authStatus }}</span>
+    </div>
+  </header>
+
+  <!-- Quick Role Switcher for Testing Labs 3 & 4 -->
+  <section class="card auth-panel">
+    <h3> Quick Authentication Profile (Basic Auth Testing)</h3>
+    <div class="button-group">
+      <button class="btn btn-primary" (click)="setCredentials('admin', 'admin123', 'ADMIN, USER')">
+        Login as Admin (admin / admin123)
+      </button>
+      <button class="btn btn-secondary" (click)="setCredentials('user', 'user123', 'USER')">
+        Login as User (user / user123)
+      </button>
+      <button class="btn btn-warning" (click)="setCredentials('guest', 'guest123', 'GUEST')">
+        Login as Guest (guest / guest123)
+      </button>
+      <button class="btn btn-danger" (click)="setCredentials('invalid', 'badpassword', 'ANONYMOUS')">
+        Invalid Credentials (Test 401)
+      </button>
+    </div>
+  </section>
+
+  <!-- Status / Alert Banner -->
+  <div *ngIf="statusMessage" [class]="isError ? 'alert alert-error' : 'alert alert-success'">
+    <strong>Status:</strong> {{ statusMessage }}
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tab-nav">
+    <button [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'; fetchDocuments()">
+       Protected Documents (CRUD)
+    </button>
+    <button [class.active]="activeTab === 'audit'" (click)="fetchAuditLogs()">
+       Audit Logs &amp; Events (Admin Only)
+    </button>
+  </div>
+
+  <!-- Documents Tab -->
+  <main *ngIf="activeTab === 'documents'">
+    <!-- Create Document Form -->
+    <section class="card">
+      <h3> Create New Classified Document (Task 2 &amp; 3 POST)</h3>
+      <form (submit)="createDocument(); $event.preventDefault()" class="form-grid">
+        <div class="form-group">
+          <label>Document Title</label>
+          <input type="text" [(ngModel)]="newDoc.title" name="title" placeholder="e.g. Incident Analysis Report" required>
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <input type="text" [(ngModel)]="newDoc.department" name="department" required>
+        </div>
+        <div class="form-group">
+          <label>Classification Level</label>
+          <select [(ngModel)]="newDoc.classificationLevel" name="classificationLevel">
+            <option value="PUBLIC">PUBLIC</option>
+            <option value="INTERNAL">INTERNAL</option>
+            <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+            <option value="SECRET">SECRET</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tags (comma separated)</label>
+          <input type="text" [(ngModel)]="tagsInput" name="tags" placeholder="cyber, audit, top-secret">
+        </div>
+        <div class="form-group full-width">
+          <label>Description / Metadata</label>
+          <textarea [(ngModel)]="newDoc.description" name="description" rows="2" placeholder="Summary of confidential contents..."></textarea>
+        </div>
+        <div class="form-actions full-width">
+          <button type="submit" class="btn btn-success">Save Document (POST)</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Document List -->
+    <section class="card">
+      <div class="card-header">
+        <h3> Stored Documents ({{ documents.length }})</h3>
+        <button class="btn btn-secondary btn-sm" (click)="fetchDocuments()"> Refresh List</button>
+      </div>
+
+      <div *ngIf="documents.length === 0" class="empty-state">
+        No documents available or access denied.
+      </div>
+
+      <div class="doc-grid" *ngIf="documents.length > 0">
+        <div class="doc-card" *ngFor="let doc of documents">
+          <div class="doc-header">
+            <h4>{{ doc.title }}</h4>
+            <span class="badge" [ngClass]="doc.classificationLevel.toLowerCase()">{{ doc.classificationLevel }}</span>
+          </div>
+          <p class="doc-desc">{{ doc.description }}</p>
+          <div class="doc-meta">
+            <span><strong>Dept:</strong> {{ doc.department }}</span>
+            <span><strong>Owner:</strong> {{ doc.owner || 'system' }}</span>
+          </div>
+          <div class="tags" *ngIf="doc.tags && doc.tags.length">
+            <span class="tag" *ngFor="let t of doc.tags">#{{ t }}</span>
+          </div>
+          <div class="doc-actions">
+            <button class="btn btn-danger btn-sm" (click)="deleteDocument(doc.id)">
+              ️ Delete (Admin Only)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Audit Tab -->
+  <main *ngIf="activeTab === 'audit'">
+    <section class="card">
+      <div class="card-header">
+        <h3> Real-Time Security Audit Trail (Task 4)</h3>
+        <button class="btn btn-secondary btn-sm" (click)="fetchAuditLogs()"> Refresh Audit Trail</button>
+      </div>
+      <table class="table" *ngIf="auditLogs.length > 0">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Method</th>
+            <th>Resource</th>
+            <th>IP Address</th>
+            <th>HTTP Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td>{{ log.timestamp | date:'short' }}</td>
+            <td><span class="action-tag">{{ log.action }}</span></td>
+            <td><strong>{{ log.username }}</strong></td>
+            <td><code>{{ log.httpMethod }}</code></td>
+            <td>{{ log.resource }}</td>
+            <td>{{ log.clientIp }}</td>
+            <td><span class="badge-status">{{ log.statusCode }}</span></td>
+            <td>{{ log.details }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="auditLogs.length === 0" class="empty-state">
+        No audit entries found, or access denied (Role ADMIN required).
+      </div>
+    </section>
+  </main>
+</div>
