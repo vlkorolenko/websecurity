@@ -5,6 +5,7 @@
 @userAuth = Basic dXNlcjp1c2VyMTIz
 
 ### 1. Anonymous Access - Read Documents (Expect: 401 Unauthorized)
+// @no-cookie-jar
 GET {{baseUrl}}/documents
 Accept: application/json
 
@@ -15,6 +16,7 @@ Accept: application/json
 %}
 
 ### 2. User Role - Read All Documents (Expect: 200 OK)
+// @no-cookie-jar
 GET {{baseUrl}}/documents
 Authorization: {{userAuth}}
 Accept: application/json
@@ -29,6 +31,7 @@ Accept: application/json
 %}
 
 ### 3. User Role - Create Document Attempt (Expect: 403 Forbidden)
+// @no-cookie-jar
 POST {{baseUrl}}/documents
 Authorization: {{userAuth}}
 Content-Type: application/json
@@ -48,6 +51,7 @@ Content-Type: application/json
 %}
 
 ### 4. User Role - Update Document Attempt (Expect: 403 Forbidden)
+// @no-cookie-jar
 PUT {{baseUrl}}/documents/{{existingDocId}}
 Authorization: {{userAuth}}
 Content-Type: application/json
@@ -67,6 +71,7 @@ Content-Type: application/json
 %}
 
 ### 5. User Role - Delete Document Attempt (Expect: 403 Forbidden)
+// @no-cookie-jar
 DELETE {{baseUrl}}/documents/{{existingDocId}}
 Authorization: {{userAuth}}
 
@@ -77,6 +82,7 @@ Authorization: {{userAuth}}
 %}
 
 ### 6. Manager Role - Create Document (Expect: 201 Created)
+// @no-cookie-jar
 POST {{baseUrl}}/documents
 Authorization: {{managerAuth}}
 Content-Type: application/json
@@ -97,6 +103,7 @@ Content-Type: application/json
 %}
 
 ### 7. Manager Role - Update Document (Expect: 200 OK)
+// @no-cookie-jar
 PUT {{baseUrl}}/documents/{{managerDocId}}
 Authorization: {{managerAuth}}
 Content-Type: application/json
@@ -116,6 +123,7 @@ Content-Type: application/json
 %}
 
 ### 8. Manager Role - Delete Document Attempt (Expect: 403 Forbidden)
+// @no-cookie-jar
 DELETE {{baseUrl}}/documents/{{managerDocId}}
 Authorization: {{managerAuth}}
 
@@ -126,6 +134,7 @@ Authorization: {{managerAuth}}
 %}
 
 ### 9. Admin Role - Delete Document (Expect: 200 OK)
+// @no-cookie-jar
 DELETE {{baseUrl}}/documents/{{managerDocId}}
 Authorization: {{adminAuth}}
 
@@ -136,6 +145,7 @@ Authorization: {{adminAuth}}
 %}
 
 ### 10. Admin Role - Access Security Audit Logs (Expect: 200 OK)
+// @no-cookie-jar
 GET {{baseUrl}}/audit-logs
 Authorization: {{adminAuth}}
 Accept: application/json
