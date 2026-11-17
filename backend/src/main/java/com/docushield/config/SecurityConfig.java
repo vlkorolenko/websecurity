@@ -98,8 +98,8 @@ public class SecurityConfig {
         }
 
         http.authorizeHttpRequests(auth -> auth
-            // Public info & CSRF token retrieval
-            .requestMatchers("/api/v1/public/**", "/api/v1/csrf", "/actuator/health").permitAll()
+            // Public info, CSRF token & JWT authentication retrieval
+            .requestMatchers("/api/v1/public/**", "/api/v1/csrf", "/actuator/health", "/api/v1/auth/**").permitAll()
             // Route-level security enforced via @PreAuthorize method annotations
             .requestMatchers("/api/v1/audit-logs/**").hasRole("ADMIN")
             .requestMatchers("/api/v1/documents/**").authenticated()

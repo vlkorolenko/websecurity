@@ -13,6 +13,12 @@ security:
   csrf:
     enabled: ${SECURITY_CSRF_ENABLED:false}
 
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:3p83qbZ7/Aox0ApclnrhCvZaPDAY7hxkMHkByd6yezkgNOCTh29lbLG8SBYs20a3}
+      expiration: 86400000
+
 management:
   endpoints:
     web:

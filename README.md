@@ -131,3 +131,13 @@ docker compose up -d
   8. `whenManagerAccessManagementOverviewThenStatusOk` (200)
   9. `whenManagerAccessSecretVaultThenStatusForbidden` (403)
   10. `whenAdminAccessSecretVaultThenStatusOk` (200)
+
+### Лабораторна №8: JWT
+* Додано бібліотеку `io.jsonwebtoken (jjwt 0.11.5)` та налаштовано сервіс генерації токенів `JwtService` з алгоритмом підпису `HS384`.
+* Створено контролер `AuthenticationController` з ендпоінтом `POST /api/v1/auth/authenticate`.
+* Ендпоінт приймає облікові дані користувача (`email`, `password`) та повертає підписаний JWT токен із claims:
+  * `sub`: email користувача (наприклад, `john@mail.com`)
+  * `fullName`: повне ім'я користувача (`John Lennon`)
+  * `authorities`: список ролей (`["USER"]`)
+  * `iat`, `exp`: часові мітки випуску та закінчення терміну дії
+* Токен перевіряється на веб-сервісі `https://jwt.io` для підтвердження структури заголовка та корисного навантаження (payload).
